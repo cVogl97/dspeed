@@ -38,4 +38,5 @@ def sort(w_in: np.ndarray, w_out: np.ndarray) -> None:
     if np.isnan(w_in).any():
         return
 
-    w_out[:] = np.sort(w_in)
+    w_out[:] = w_in
+    w_out.sort()
