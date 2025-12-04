@@ -85,14 +85,14 @@ def test_time_point_thresh(compare_numba_vs_python):
     w_in = np.concatenate([np.arange(-1, 5, 1), np.arange(-1, 5, 1)], dtype="float")
     assert compare_numba_vs_python(time_point_thresh, w_in, 3, 0, 1) == 4.0
 
-    # Test: waveform falls through threshold without rising back
+    # Test polarity-checking behavior: waveform falls through threshold without rising back
     # [5, 4, 3, 2, 1, 0, -1] - threshold 2.5 walking forward from 0
     # time_point_thresh looks for w_in[i] <= threshold < w_in[i+1] (rising through)
     # This never happens here since waveform is falling, so returns nan
     w_falling = np.array([5.0, 4.0, 3.0, 2.0, 1.0, 0.0, -1.0])
     assert np.isnan(compare_numba_vs_python(time_point_thresh, w_falling, 2.5, 0, 1))
 
-    # Test: waveform that starts below threshold and rises
+    # Test polarity-checking behavior: waveform that starts below threshold and rises
     # [0, 1, 2, 3, 4, 5] - threshold 2.5 walking forward from 0
     # time_point_thresh finds the rising crossing at index 2 (w_in[2]=2 <= 2.5 < w_in[3]=3)
     w_rising = np.array([0.0, 1.0, 2.0, 3.0, 4.0, 5.0])
