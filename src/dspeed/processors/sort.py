@@ -12,7 +12,7 @@ from ..utils import numba_defaults_kwargs as nb_kwargs
     **nb_kwargs,
 )
 def sort(w_in: np.ndarray, w_out: np.ndarray) -> None:
-    """Return a sorted array using :func:`numpy.sort`.
+    """Return a sorted array.
 
     Parameters
     ----------
