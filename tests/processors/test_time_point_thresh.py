@@ -344,6 +344,43 @@ def test_interpolated_time_point_thresh(compare_numba_vs_python):
         == 4.5
     )
 
+    # -------- Tests for falling waveforms with interpolation --------
+    # Test linear interpolation with falling waveform
+    # [5, 4, 3, 2, 1, 0, -1] - threshold 2.5 walking forward from 0
+    # Crossing between index 2 (value=3) and index 3 (value=2)
+    # Linear interpolation: 2 + (2.5 - 3) / (2 - 3) = 2 + (-0.5) / (-1) = 2 + 0.5 = 2.5
+    w_falling = np.array([5.0, 4.0, 3.0, 2.0, 1.0, 0.0, -1.0])
+    assert (
+        compare_numba_vs_python(
+            interpolated_time_point_thresh, w_falling, 2.5, 0, 1, 108
+        )
+        == 2.5
+    )
+
+    # Test linear interpolation with negative polarity waveform
+    # [0, -1, -2, -3, -4, -5] - threshold -2.5 walking forward from 0
+    # Crossing between index 2 (value=-2) and index 3 (value=-3)
+    # Linear interpolation: 2 + (-2.5 - (-2)) / (-3 - (-2)) = 2 + (-0.5) / (-1) = 2.5
+    w_neg_falling = np.array([0.0, -1.0, -2.0, -3.0, -4.0, -5.0])
+    assert (
+        compare_numba_vs_python(
+            interpolated_time_point_thresh, w_neg_falling, -2.5, 0, 1, 108
+        )
+        == 2.5
+    )
+
+    # Test linear interpolation with negative polarity waveform rising back
+    # [-5, -4, -3, -2, -1, 0] - threshold -2.5 walking forward from 0
+    # Crossing between index 2 (value=-3) and index 3 (value=-2)
+    # Linear interpolation: 2 + (-2.5 - (-3)) / (-2 - (-3)) = 2 + 0.5 / 1 = 2.5
+    w_neg_rising = np.array([-5.0, -4.0, -3.0, -2.0, -1.0, 0.0])
+    assert (
+        compare_numba_vs_python(
+            interpolated_time_point_thresh, w_neg_rising, -2.5, 0, 1, 108
+        )
+        == 2.5
+    )
+
 
 def test_bi_level_zero_crossing_time_points(compare_numba_vs_python):
     # Test exceptions and initial checks
