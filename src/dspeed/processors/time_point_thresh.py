@@ -81,7 +81,8 @@ def time_point_thresh(
                 return
     else:
         for i in range(int(t_start), 0, -1):
-            # Check for crossing in either direction when moving forward in time
+            # Check for threshold crossing (in either direction) that occurred
+            # when moving forward in time, detected while walking backward
             if (w_in[i - 1] < a_threshold <= w_in[i]) or (
                 w_in[i - 1] > a_threshold >= w_in[i]
             ):
@@ -187,7 +188,8 @@ def interpolated_time_point_thresh(
                 break
     else:
         for i in range(int(t_start), 1, -1):
-            # Check for crossing in either direction when moving forward in time
+            # Check for threshold crossing (in either direction) that occurred
+            # when moving forward in time, detected while walking backward
             if (w_in[i - 1] < a_threshold <= w_in[i]) or (
                 w_in[i - 1] > a_threshold >= w_in[i]
             ):

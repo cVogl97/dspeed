@@ -88,7 +88,8 @@ def test_time_point_thresh(compare_numba_vs_python):
     # Test polarity-checking behavior: waveform falls through threshold
     # [5, 4, 3, 2, 1, 0, -1] - threshold 2.5 walking forward from 0
     # time_point_thresh now detects falling crossings too
-    # Should find the crossing at index 2 (w_in[2]=3 >= 2.5 > w_in[3]=2)
+    # Should find the crossing at index 2 where w_in[2]=3 and w_in[3]=2
+    # Falling condition: 3.0 >= 2.5 (true) and 2.5 > 2.0 (true)
     w_falling = np.array([5.0, 4.0, 3.0, 2.0, 1.0, 0.0, -1.0])
     assert compare_numba_vs_python(time_point_thresh, w_falling, 2.5, 0, 1) == 2.0
 
@@ -101,7 +102,8 @@ def test_time_point_thresh(compare_numba_vs_python):
     # Test negative polarity: waveform rises through negative threshold
     # [-5, -4, -3, -2, -1, 0] - threshold -2.5 walking forward from 0
     # The waveform rises from -5 to 0, crossing -2.5 between indices 2 and 3
-    # Should find the rising crossing at index 2 (w_in[2]=-3 <= -2.5 < w_in[3]=-2)
+    # Rising condition: w_in[2]=-3 <= -2.5 (true) and -2.5 < w_in[3]=-2 (true)
+    # Note: -3 < -2.5 < -2 (ordering on number line)
     w_neg_rising = np.array([-5.0, -4.0, -3.0, -2.0, -1.0, 0.0])
     assert compare_numba_vs_python(time_point_thresh, w_neg_rising, -2.5, 0, 1) == 2.0
 
