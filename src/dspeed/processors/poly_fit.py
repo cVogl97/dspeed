@@ -32,10 +32,47 @@ def _poly_fitter(w_in: np.ndarray, inv: np.ndarray, poly_pars: np.ndarray) -> No
     poly_pars[:] = inv @ arr
 
 
-def poly_fit(length, deg):
-    """Factory function for generating a polynomial fitter for an input of length
-    `length` to a polynomial of order `deg`."""
+def poly_fit(length: int, deg: int):
+    """Factory function for generating a polynomial fitter.
 
+    Returns a processor that fits an input waveform of the given length
+    to a polynomial of the specified degree.
+
+    Parameters
+    ----------
+    length
+        The length of the input waveform.
+    deg
+        The degree of the polynomial to fit.
+
+    Returns
+    -------
+    GUFuncWrapper
+        A processor that takes an input waveform and outputs polynomial
+        coefficients. The coefficients are ordered from lowest to highest
+        degree (i.e., ``poly_pars[0]`` is the constant term, ``poly_pars[1]``
+        is the linear coefficient, etc.).
+
+    YAML Configuration Example
+    --------------------------
+
+    .. code-block:: yaml
+
+        tail_pars:
+          function: poly_fit
+          module: dspeed.processors
+          args:
+            - wf_logged[(db.tail.start):(db.tail.stop)]
+            - tail_pars(5, 'd')
+          init_args:
+            - len(wf_logged[(db.tail.start):(db.tail.stop)])
+            - '4'
+          unit: ADC
+          defaults:
+            db.tail.start: 2125
+            db.tail.stop: 4000
+        tail_slope: tail_pars[1]
+    """
     vals_array = np.zeros(2 * deg + 1, dtype="float64")
 
     for i in range(length):
@@ -51,8 +88,8 @@ def poly_fit(length, deg):
 
     return GUFuncWrapper(
         lambda w_in, poly_pars: _poly_fitter(w_in, inv, poly_pars),
-        "(n),(m)",
-        ["ff", "dd"],
+        "(n)->(m)",
+        ["ff->f", "dd->d"],
         name="poly_fitter",
         vectorized=True,
         copy_out=False,
@@ -74,7 +111,43 @@ def poly_diff(
     mean: float,
     rms: float,
 ) -> None:
-    """ """
+    """Compute the mean and RMS of the residual between a waveform and a polynomial fit.
+
+    Evaluates the polynomial defined by ``poly_pars`` at each sample index and
+    computes the difference with the input waveform. Returns the mean and RMS
+    of these residuals.
+
+    Parameters
+    ----------
+    w_in
+        The input waveform.
+    poly_pars
+        Polynomial coefficients from lowest to highest degree.
+    mean
+        Output: mean of the residuals.
+    rms
+        Output: RMS of the residuals.
+
+    YAML Configuration Example
+    --------------------------
+
+    .. code-block:: yaml
+
+        tail_diff, tail_rms:
+          function: poly_diff
+          module: dspeed.processors
+          args:
+            - waveform[(db.tail.start):(db.tail.stop)]
+            - tail_pars
+            - tail_diff
+            - tail_rms
+          unit:
+            - ADC
+            - ADC
+          defaults:
+            db.tail.start: 2125
+            db.tail.stop: 4000
+    """
     mean[0] = np.nan
     rms[0] = np.nan
 
@@ -108,7 +181,45 @@ def poly_diff(
 def poly_exp_rms(
     w_in: np.ndarray, poly_pars: np.ndarray, mean: float, rms: float
 ) -> None:
-    """ """
+    """Compute the mean and RMS of the residual between a waveform and exp(polynomial).
+
+    Evaluates the polynomial defined by ``poly_pars`` at each sample index,
+    exponentiates the result, and computes the difference with the input waveform.
+    Returns the mean and RMS of these residuals. This is useful for fitting
+    exponential decay tails where the log of the waveform was fitted with a polynomial.
+
+    Parameters
+    ----------
+    w_in
+        The input waveform.
+    poly_pars
+        Polynomial coefficients from lowest to highest degree.
+    mean
+        Output: mean of the residuals.
+    rms
+        Output: RMS of the residuals.
+
+    YAML Configuration Example
+    --------------------------
+
+    .. code-block:: yaml
+
+        tail_diff, tail_rms:
+          description: finds residual of polynomial fit of the logged tail
+          function: poly_exp_rms
+          module: dspeed.processors
+          args:
+            - waveform_presummed[(db.tail.start):(db.tail.stop)]
+            - tail_pars
+            - tail_diff
+            - tail_rms
+          unit:
+            - ADC
+            - ADC
+          defaults:
+            db.tail.start: 2125
+            db.tail.stop: 4000
+    """
 
     mean[0] = np.nan
     rms[0] = np.nan
